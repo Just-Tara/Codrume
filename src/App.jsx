@@ -19,6 +19,7 @@ function App() {
     js: 'console.log("Hello from JavaScript!");\n\ndocument.addEventListener("DOMContentLoaded", () => {\n  console.log("Page loaded!");\n});'
   });
   const [fontSize, setFontSize] = useState(14);
+  const [isAutoSaveEnabled, setIsAutoSaveEnabled] = useState(true);
 
   useEffect(() => {
     try{
@@ -36,6 +37,23 @@ function App() {
 
   }, [])
 
+  useEffect(() => {
+    if (!isAutoSaveEnabled) {
+      console.log("Auto-save is disabled.");
+      return;
+    }
+    const timer = setTimeout(() => {
+      try{
+        localStorage.setItem('code-files', JSON.stringify(files));
+        console.log("Auto-saved code files.");
+      } catch (error){
+        console.log("Failed to auto-save:", error)
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [files, isAutoSaveEnabled]);
+
   const increaseFontSize = () => {
    setFontSize(prev => Math.min(prev + 2, 24));
   }
@@ -44,7 +62,10 @@ function App() {
    setFontSize(prev => Math.max(prev - 2, 10));
   }
 
-  
+  const toggleAutoSave = () => {
+    setIsAutoSaveEnabled(prev => !prev);
+  };
+
   const handleCodeChange = (newCode) => {
     setFiles(prev => ({
       ...prev,
@@ -96,6 +117,8 @@ function App() {
         onIncreaseFontSize = {increaseFontSize}
         onDecreaseFontSize = {decreaseFontSize}
         onSaveCode = {handleSaveCode}
+         isAutoSaveEnabled={isAutoSaveEnabled}
+        onToggleAutoSave={toggleAutoSave}
       />
 
        <MobileTabs
@@ -115,6 +138,7 @@ function App() {
           onCodeChange={handleCodeChange}
           isDark={isDark}
           fontSize={fontSize}
+          isAutoSaveEnabled={isAutoSaveEnabled}
         />
         <PreviewPanel 
           activeMobileView={activeMobileView}
@@ -129,6 +153,8 @@ function App() {
         onClose={() => setIsMobileMenuOpen(false)}
         onIncreaseFontSize = {increaseFontSize}
         onDecreaseFontSize = {decreaseFontSize}
+        isAutoSaveEnabled={isAutoSaveEnabled}
+        onToggleAutoSave={toggleAutoSave}
       />
     </div>
   );

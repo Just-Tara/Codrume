@@ -3,7 +3,16 @@ import EditorTabs from './EditorTabs';
 import CodeEditor from './CodeEditor';
 import StatusBar from './StatusBar';
 
-function EditorPanel({ activeTab, onTabChange, activeMobileView, files, onCodeChange, isDark, fontSize}) {
+function EditorPanel({ 
+    activeTab, 
+    onTabChange, 
+    activeMobileView, 
+    files, 
+    onCodeChange, 
+    isDark, 
+    fontSize,
+    isAutoSaveEnabled
+  }) {
   return (
 
     <div
@@ -24,7 +33,7 @@ function EditorPanel({ activeTab, onTabChange, activeMobileView, files, onCodeCh
         fontSize={fontSize}
         />
       </div>
-      <StatusBar />
+      <StatusBar isAutoSaveEnabled={isAutoSaveEnabled} />
     </div>
   );
 }

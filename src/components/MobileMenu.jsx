@@ -1,7 +1,7 @@
 import React from "react";
-import { Settings, X, Save, Share2, Download, Info } from "lucide-react";
+import { Settings, X, Save, Share2, Info } from "lucide-react";
 
-function MobileMenu({ isOpen, onClose, onIncreaseFontSize, onDecreaseFontSize }) {
+function MobileMenu({ isOpen, onClose, onIncreaseFontSize, onDecreaseFontSize, onToggleAutoSave, isAutoSaveEnabled }) {
   if (!isOpen) return null;
 
   return (
@@ -57,10 +57,16 @@ function MobileMenu({ isOpen, onClose, onIncreaseFontSize, onDecreaseFontSize })
           <div className="bg-gray-900 rounded p-3">
             <div className="text-xs text-gray-500 mb-1">Auto Save</div>
             <div className="text-sm text-gray-200 flex items-center justify-between">
-              Enabled
-              <div className="w-10 h-5 bg-blue-600 rounded-full relative">
-                <div className="absolute right-0.5 top-0.5 w-4 h-4 bg-white rounded-full"></div>
-              </div>
+              {isAutoSaveEnabled ? 'Enabled' : 'Disabled'}
+              <button 
+                  onClick={onToggleAutoSave} 
+                  className={`w-10 h-5 rounded-full relative transition ${isAutoSaveEnabled ? 
+                          'bg-blue-600' : 'bg-gray-600'} `}>
+             
+                <div className={`absolute right-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition ${
+                  isAutoSaveEnabled ? "right-0.5" : "left-0.5"
+                }`}></div>
+            </button>
             </div>
           </div>
 
@@ -74,7 +80,7 @@ function MobileMenu({ isOpen, onClose, onIncreaseFontSize, onDecreaseFontSize })
             <Share2 size={16} /> Share Code
           </button>
           <button className="w-full text-left text-sm text-gray-300 hover:text-gray-200 py-2 flex items-center gap-2">
-            <Download size={16}/> Export Code
+            Format
           </button>
 
           <div className="border-t border-gray-700 my-4"></div>

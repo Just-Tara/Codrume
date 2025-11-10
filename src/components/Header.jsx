@@ -1,7 +1,7 @@
 import React, { useState } from 'react'; 
 import { Play, Save, Share2, Settings, Moon, Sun, Plus, X, Menu, Code } from 'lucide-react';
 
-export default function Header ({ isDark, onToggleTheme, onMenuOpen, onRunCode, onIncreaseFontSize, onDecreaseFontSize, onSaveCode}) 
+export default function Header ({ isDark, onToggleTheme, onMenuOpen, onRunCode, onIncreaseFontSize, onDecreaseFontSize, onSaveCode, onToggleAutoSave, isAutoSaveEnabled}) 
     { return ( 
         <header className="bg-gray-800 dark:bg-gray-900 border-b border-gray-700 px-4 py-3 flex items-center justify-between 
         flex-wrap gap-3"> 
@@ -29,6 +29,17 @@ export default function Header ({ isDark, onToggleTheme, onMenuOpen, onRunCode, 
             </div> 
             
             <div className="flex items-center gap-2"> 
+                    <button 
+                        onClick={onToggleAutoSave}
+                        className={`hidden px-3 py-1.5 rounded md:flex items-center gap-2 text-xs border transition ${
+                        isAutoSaveEnabled
+                            ? 'bg-green-600 text-white border-green-600' 
+                            : 'bg-gray-700 text-gray-300 border-gray-600'
+                        }`}
+                        title={isAutoSaveEnabled ? 'Auto-save is ON' : 'Auto-save is OFF'}
+                    >
+                        {isAutoSaveEnabled ? '● Auto Save' : '○ Manual'}
+                    </button>
                     <button onClick={onIncreaseFontSize}
                             className="hidden md:block bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1.5 rounded text-xs border border-gray-600 transition"> 
                             A⁺ 
