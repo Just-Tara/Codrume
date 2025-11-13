@@ -1,6 +1,6 @@
 import React from 'react';
 
-function StatusBar( isAutoSaveEnabled) {
+function StatusBar({isAutoSaveEnabled}) {
   return (
     <div className="bg-gray-800 border-t border-gray-700 px-4 py-2 flex items-center justify-between text-xs text-gray-500">
       <div className="flex items-center gap-4">

@@ -1,10 +1,11 @@
-
 import React, { useEffect, useState } from "react";
 import Header from "./components/Header";
 import MobileTabs from "./components/MobileTabs";
 import EditorPanel from "./components/EditorPanel.jsx";
 import PreviewPanel from "./components/PreviewPanel";
 import MobileMenu from "./components/MobileMenu";
+import Split from "@uiw/react-split";
+
 
 function App() {
   const [isDark, setIsDark] = useState(true);
@@ -12,6 +13,7 @@ function App() {
   const [activeTab, setActiveTab] = useState("html");
   const [activeMobileView, setActiveMobileView] = useState("html");
   const [outputCode, setOutputCode] = useState("");
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   const [files, setFiles] = useState({
     html: '<!DOCTYPE html>\n<html>\n<head>\n  <title>My Page</title>\n</head>\n<body>\n  <h1>Hello World!</h1>\n</body>\n</html>',
@@ -22,20 +24,33 @@ function App() {
   const [isAutoSaveEnabled, setIsAutoSaveEnabled] = useState(true);
 
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
     try{
       const savedFiles = localStorage.getItem("code-files");
-        if (savedFiles) {
-          const parsedFiles = JSON.parse(savedFiles);
-          setFiles(parsedFiles);
-          console.log("successfully loade the saved files");
-        } else{
-          console.log("No saved files found");
-        }
+      if (savedFiles) {
+        const parsedFiles = JSON.parse(savedFiles);
+        setFiles(parsedFiles);
+        console.log("successfully loaded the saved files");
+      } else{
+        console.log("No saved files found");
+      }
     }catch(error) {
       console.log("Failed to load saved files", error)
     }
-
   }, [])
+
+  useEffect(() => {
+    localStorage.setItem('auto-save-enabled', JSON.stringify(isAutoSaveEnabled));
+    console.log('Auto-save preference saved:', isAutoSaveEnabled);
+  }, [isAutoSaveEnabled]);
 
   useEffect(() => {
     if (!isAutoSaveEnabled) {
@@ -55,11 +70,11 @@ function App() {
   }, [files, isAutoSaveEnabled]);
 
   const increaseFontSize = () => {
-   setFontSize(prev => Math.min(prev + 2, 24));
+    setFontSize(prev => Math.min(prev + 2, 24));
   }
 
   const decreaseFontSize = () => {
-   setFontSize(prev => Math.max(prev - 2, 10));
+    setFontSize(prev => Math.max(prev - 2, 10));
   }
 
   const toggleAutoSave = () => {
@@ -76,35 +91,35 @@ function App() {
   const handleSaveCode = () => {
     try{
       localStorage.setItem('code-files', JSON.stringify(files));
-        console.log("code saved successfully!");
+      console.log("code saved successfully!");
     } catch (error){
-        console.log("failed to save:", error)
+      console.log("failed to save:", error)
     }
   }
 
   const handleRunCode = () => {
-   console.log("Running code...");
-   console.log(files);
-      const combinedCode = `
-   <!DOCTYPE html>
-    <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Preview</title>
-        <style>
-          ${files.css}
-        </style>
-      </head>
-      <body>
-        ${files.html}
-        <script>
-          ${files.js}
-        </script>
-      </body>
-    </html>
-  `;
-      setOutputCode(combinedCode);
+    console.log("Running code...");
+    console.log(files);
+    const combinedCode = `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview</title>
+    <style>
+      ${files.css}
+    </style>
+  </head>
+  <body>
+    ${files.html}
+    <script>
+      ${files.js}
+    </script>
+  </body>
+</html>
+`;
+    setOutputCode(combinedCode);
   }
 
   return (
@@ -114,45 +129,123 @@ function App() {
         onToggleTheme={() => setIsDark(!isDark)}
         onMenuOpen={() => setIsMobileMenuOpen(true)}
         onRunCode={handleRunCode}
-        onIncreaseFontSize = {increaseFontSize}
-        onDecreaseFontSize = {decreaseFontSize}
-        onSaveCode = {handleSaveCode}
-         isAutoSaveEnabled={isAutoSaveEnabled}
+        onIncreaseFontSize={increaseFontSize}
+        onDecreaseFontSize={decreaseFontSize}
+        onSaveCode={handleSaveCode}
+        isAutoSaveEnabled={isAutoSaveEnabled}
         onToggleAutoSave={toggleAutoSave}
       />
 
-       <MobileTabs
-         activeView={activeMobileView}
-         onViewChange={(view) => {
-            setActiveMobileView(view);
-            if (view !== "preview") setActiveTab(view); 
-         }}
-         />
+      <MobileTabs
+        activeView={activeMobileView}
+        onViewChange={(view) => {
+          setActiveMobileView(view);
+          if (view !== "preview") setActiveTab(view); 
+        }}
+      />
 
-      <div className="flex-1 flex overflow-hidden">
-        <EditorPanel
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          activeMobileView={activeMobileView}
-          files={files}
-          onCodeChange={handleCodeChange}
-          isDark={isDark}
-          fontSize={fontSize}
-          isAutoSaveEnabled={isAutoSaveEnabled}
-        />
-        <PreviewPanel 
-          activeMobileView={activeMobileView}
-          files={files}
-          outputCode={outputCode}
-          fontSize={fontSize}
-        />
-      </div>
+      {isMobile ? (
+       
+        <div className="flex-1 flex overflow-hidden">
+          <EditorPanel
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            activeMobileView={activeMobileView}
+            files={files}
+            onCodeChange={handleCodeChange}
+            isDark={isDark}
+            fontSize={fontSize}
+            isAutoSaveEnabled={isAutoSaveEnabled}
+          />
+          <PreviewPanel 
+            activeMobileView={activeMobileView}
+            files={files}
+            outputCode={outputCode}
+            fontSize={fontSize}
+          />
+        </div>
+      ) : (
+        <div className="flex-1 overflow-hidden">
+          <Split
+            style={{ height: '100%', width: '100%' }}
+            mode="horizontal"
+            lineBar
+            renderBar={({ onMouseDown, ...props }) => (
+              <div
+                {...props}
+                style={{
+                  width: '1px',
+                  background: isDark ? '#3a3a3a' : '#d0d0d0',
+                  cursor: 'col-resize',
+                  position: 'relative',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#3b82f6';
+                  e.currentTarget.style.width = '3px';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = isDark ? '#3a3a3a' : '#d0d0d0';
+                  e.currentTarget.style.width = '1px';
+                }}
+              >
+                <div 
+                  onMouseDown={onMouseDown}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                  }}
+                />
+              </div>
+            )}
+          >
+           
+            <div style={{   
+                    minWidth: 300, 
+                    width: '50%', 
+                    height: '100%', 
+                    display: 'flex', 
+                    flexDirection: 'column' 
+                  }}>
+              <EditorPanel
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                activeMobileView={activeMobileView}
+                files={files}
+                onCodeChange={handleCodeChange}
+                isDark={isDark}
+                fontSize={fontSize}
+                isAutoSaveEnabled={isAutoSaveEnabled}
+              />
+            </div>
+
+            
+            <div style={{ 
+                    minWidth: 300, 
+                    flex: 1, 
+                    height: '100%', 
+                    display: 'flex', 
+                    flexDirection: 'column' 
+                  }}>
+              <PreviewPanel 
+                activeMobileView={activeMobileView}
+                files={files}
+                outputCode={outputCode}
+                fontSize={fontSize}
+              />
+            </div>
+          </Split>
+        </div>
+      )}
 
       <MobileMenu
+        isDark={isDark}
+        onToggleTheme={() => setIsDark(!isDark)}
         isOpen={isMobileMenuOpen}
+        onSaveCode={handleSaveCode}
         onClose={() => setIsMobileMenuOpen(false)}
-        onIncreaseFontSize = {increaseFontSize}
-        onDecreaseFontSize = {decreaseFontSize}
+        onIncreaseFontSize={increaseFontSize}
+        onDecreaseFontSize={decreaseFontSize}
         isAutoSaveEnabled={isAutoSaveEnabled}
         onToggleAutoSave={toggleAutoSave}
       />

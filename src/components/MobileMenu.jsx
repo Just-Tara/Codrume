@@ -1,7 +1,16 @@
 import React from "react";
-import { Settings, X, Save, Share2, Info } from "lucide-react";
+import { Settings, X, Save, Share2, Info, Database } from "lucide-react";
 
-function MobileMenu({ isOpen, onClose, onIncreaseFontSize, onDecreaseFontSize, onToggleAutoSave, isAutoSaveEnabled }) {
+function MobileMenu({ 
+      isOpen, 
+      onClose, 
+      onIncreaseFontSize, 
+      onDecreaseFontSize, 
+      onToggleAutoSave, 
+      isAutoSaveEnabled,
+      isDark,
+      onToggleTheme
+      }) {
   if (!isOpen) return null;
 
   return (
@@ -35,10 +44,18 @@ function MobileMenu({ isOpen, onClose, onIncreaseFontSize, onDecreaseFontSize, o
           <div className="bg-gray-900 rounded p-3">
             <div className="text-xs text-gray-500 mb-1">Theme</div>
             <div className="text-sm text-gray-200 flex items-center justify-between">
-              🌙 Dark Mode
-              <div className="w-10 h-5 bg-blue-600 rounded-full relative">
-                <div className="absolute right-0.5 top-0.5 w-4 h-4 bg-white rounded-full"></div>
-              </div>
+              {isDark ? 'Dark' : 'Light'}  
+                <button 
+                  onClick={onToggleTheme} 
+                  className={`w-10 h-5 rounded-full relative transition ${isDark ? 
+                          'bg-blue-600' : 'bg-gray-600'} `}>
+             
+                 <div className={`absolute right-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition
+                  ${isDark ? "right-0.5" : "left-0.5"}`}>
+
+                 </div>
+                </button>
+              
             </div>
           </div>
 
@@ -80,7 +97,7 @@ function MobileMenu({ isOpen, onClose, onIncreaseFontSize, onDecreaseFontSize, o
             <Share2 size={16} /> Share Code
           </button>
           <button className="w-full text-left text-sm text-gray-300 hover:text-gray-200 py-2 flex items-center gap-2">
-            Format
+           <Database size={16}/> Format
           </button>
 
           <div className="border-t border-gray-700 my-4"></div>

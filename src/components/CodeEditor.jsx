@@ -27,7 +27,6 @@ function CodeEditor({ value, onChange, language, theme, fontSize }) {
         fontFamily: 'Consolas, Monaco, monospace',
         minimap: { enabled: false },
         lineNumbers: 'on',
-       
         scrollBeyondLastLine: false,
         automaticLayout: true,
         tabSize: 2,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useRef, forwardRef, useImperativeHandle} from 'react';
 import EditorTabs from './EditorTabs';
 import CodeEditor from './CodeEditor';
 import StatusBar from './StatusBar';
