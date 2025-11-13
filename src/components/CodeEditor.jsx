@@ -1,19 +1,32 @@
-import React from 'react';
+import React, {useRef} from 'react';
 import Editor from '@monaco-editor/react';
 
-function CodeEditor({ value, onChange, language, theme, fontSize }) {
+function CodeEditor({ value, onChange, language, theme, fontSize, onEditorMount }) {
+  
+  const editorRef = useRef(null);
+  
   const handleEditorChange = (newValue) => {
     if (typeof newValue === 'string') {
       onChange(newValue);
     }
   };
 
+  const handleEditorDidMount = (editor, monaco) => {
+    editorRef.current = editor;
+
+    if (onEditorMount) {
+    onEditorMount(editor);
+  }
+  };
+
+  
   return (
     <Editor
       height="100%"
       language={language}
       value={value || ''}  
       onChange={handleEditorChange}
+      onMount={handleEditorDidMount}
       theme={theme === 'dark' ? 'vs-dark' : 'vs-light'}
       loading={
         <div className="flex items-center justify-center h-full bg-gray-900 text-gray-400">

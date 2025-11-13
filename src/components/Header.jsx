@@ -1,7 +1,18 @@
 import React, { useState } from 'react'; 
 import { Play, Save, Share2, Settings, Moon, Sun, Plus, X, Menu, Code } from 'lucide-react';
 
-export default function Header ({ isDark, onToggleTheme, onMenuOpen, onRunCode, onIncreaseFontSize, onDecreaseFontSize, onSaveCode, onToggleAutoSave, isAutoSaveEnabled}) 
+export default function Header ({ 
+        isDark, 
+        onToggleTheme, 
+        onMenuOpen, 
+        onRunCode, 
+        onIncreaseFontSize, 
+        onDecreaseFontSize, 
+        onSaveCode, 
+        onToggleAutoSave, 
+        isAutoSaveEnabled,
+        onFormatCode
+    }) 
     { return ( 
         <header className="bg-gray-800 dark:bg-gray-900 border-b border-gray-700 px-4 py-3 flex items-center justify-between 
         flex-wrap gap-3"> 
@@ -23,7 +34,8 @@ export default function Header ({ isDark, onToggleTheme, onMenuOpen, onRunCode, 
                         <Save size={14} /> Save </button> 
                     <button className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded flex items-center gap-2 text-sm transition">
                         <Share2 size={14} /> Share </button> 
-                    <button className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-3 py-1.5 rounded flex items-center gap-2 text-sm border border-gray-600 transition"> 
+                    <button onClick={onFormatCode}
+                            className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-3 py-1.5 rounded flex items-center gap-2 text-sm border border-gray-600 transition"> 
                   Format </button> 
                 </div> 
             </div> 

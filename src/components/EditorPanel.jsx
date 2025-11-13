@@ -11,7 +11,8 @@ function EditorPanel({
     onCodeChange, 
     isDark, 
     fontSize,
-    isAutoSaveEnabled
+    isAutoSaveEnabled,
+    onEditorReady
   }) {
   return (
 
@@ -31,6 +32,7 @@ function EditorPanel({
         language={activeTab === "js" ? "javascript" : activeTab}
         theme={isDark ? "dark" : "light"}
         fontSize={fontSize}
+        onEditorMount={onEditorReady}
         />
       </div>
       <StatusBar isAutoSaveEnabled={isAutoSaveEnabled} />

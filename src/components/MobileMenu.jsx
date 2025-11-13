@@ -9,7 +9,9 @@ function MobileMenu({
       onToggleAutoSave, 
       isAutoSaveEnabled,
       isDark,
-      onToggleTheme
+      onToggleTheme,
+      onSaveCode, 
+      onFormatCode
       }) {
   if (!isOpen) return null;
 
@@ -90,13 +92,15 @@ function MobileMenu({
           <div className="border-t border-gray-700 my-4"></div>
 
           
-          <button className="w-full text-left text-sm text-green-400 hover:text-green-300 py-2 flex items-center gap-2">
+          <button onClick={onSaveCode}
+                  className="w-full text-left text-sm text-green-400 hover:text-green-300 py-2 flex items-center gap-2">
             <Save size={16} /> Save Project
           </button>
           <button className="w-full text-left text-sm text-purple-400 hover:text-purple-300 py-2 flex items-center gap-2">
             <Share2 size={16} /> Share Code
           </button>
-          <button className="w-full text-left text-sm text-gray-300 hover:text-gray-200 py-2 flex items-center gap-2">
+          <button onClick={onFormatCode}
+                  className="w-full text-left text-sm text-gray-300 hover:text-gray-200 py-2 flex items-center gap-2">
            <Database size={16}/> Format
           </button>
 

@@ -22,6 +22,7 @@ function App() {
   });
   const [fontSize, setFontSize] = useState(14);
   const [isAutoSaveEnabled, setIsAutoSaveEnabled] = useState(true);
+  const [editorInstance, setEditorInstance] = useState(null); 
 
   useEffect(() => {
     const checkMobile = () => {
@@ -97,6 +98,18 @@ function App() {
     }
   }
 
+  const handleEditorReady = (editor) => {
+    setEditorInstance(editor);
+  }
+
+  const handleFormatCode = () => {
+    if (editorInstance) {
+      editorInstance.getAction('editor.action.formatDocument').run();
+    }else {
+      console.log("Editor instance not ready yet.");
+    }
+  }
+
   const handleRunCode = () => {
     console.log("Running code...");
     console.log(files);
@@ -132,6 +145,7 @@ function App() {
         onIncreaseFontSize={increaseFontSize}
         onDecreaseFontSize={decreaseFontSize}
         onSaveCode={handleSaveCode}
+        onFormatCode={handleFormatCode}
         isAutoSaveEnabled={isAutoSaveEnabled}
         onToggleAutoSave={toggleAutoSave}
       />
@@ -156,6 +170,7 @@ function App() {
             isDark={isDark}
             fontSize={fontSize}
             isAutoSaveEnabled={isAutoSaveEnabled}
+            onEditorReady={handleEditorReady}
           />
           <PreviewPanel 
             activeMobileView={activeMobileView}
@@ -187,7 +202,7 @@ function App() {
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = isDark ? '#3a3a3a' : '#d0d0d0';
                   e.currentTarget.style.width = '1px';
-                }}
+                }} 
               >
                 <div 
                   onMouseDown={onMouseDown}
@@ -216,6 +231,7 @@ function App() {
                 isDark={isDark}
                 fontSize={fontSize}
                 isAutoSaveEnabled={isAutoSaveEnabled}
+                 onEditorReady={handleEditorReady}
               />
             </div>
 
@@ -243,6 +259,7 @@ function App() {
         onToggleTheme={() => setIsDark(!isDark)}
         isOpen={isMobileMenuOpen}
         onSaveCode={handleSaveCode}
+        onFormatCode={handleFormatCode}
         onClose={() => setIsMobileMenuOpen(false)}
         onIncreaseFontSize={increaseFontSize}
         onDecreaseFontSize={decreaseFontSize}
