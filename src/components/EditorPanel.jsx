@@ -14,7 +14,8 @@ function EditorPanel({
     isAutoSaveEnabled,
     onEditorReady,
     onAddFile,
-    onDeleteFile
+    onDeleteFile,
+    onToogleSidebar
   }) {
   
   
@@ -41,6 +42,7 @@ function EditorPanel({
         onAddFile={onAddFile}
         files={files}
         onDeleteFile={onDeleteFile}
+        onToggleSidebar={onToogleSidebar}
       />
       
       <div className='flex-1 overflow-hidden'>

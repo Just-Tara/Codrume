@@ -1,16 +1,17 @@
 import React from 'react';
 import { Plus, X, Folder} from 'lucide-react';
 
-function MobileTabs({ activeView, onViewChange, files }) {
+function MobileTabs({ activeView, onViewChange, files, onToggleSidebar, onFileOpen  }) {
   const displayFiles = files
   
   return (
     <div className="md:hidden bg-gray-800 border-b border-gray-700 flex">
       
      <button
-            className='flex items-center text-gray-400  hover:text-gray-200 transition bg-gray-700 pl-2 pr-3' 
+            className='flex items-center cursor-pointer text-gray-400  hover:text-gray-200 transition bg-gray-700 pl-2 pr-3' 
             aria-label="Toggle file explorer"
             title='File Explorer'
+            onClick={onToggleSidebar}
           >
             <Folder size={20} />
           </button>

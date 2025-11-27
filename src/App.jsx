@@ -9,6 +9,7 @@ import Split from "@uiw/react-split";
 import { getDefaultContent } from "./constants/Languages.jsx";
 import { excutePistonCode } from "./utils/PistonApi.jsx";
 import Console from "./components/Console.jsx";
+import FileExplorer from "./components/FIleExplorer.jsx";
 
 function App() {
   const [isDark, setIsDark] = useState(true);
@@ -18,40 +19,49 @@ function App() {
   const [activeMobileView, setActiveMobileView] = useState("html");
   const [outputCode, setOutputCode] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [consoleLogs, setConsoleLogs] = useState([]);
-  const [isConsoleOpen, setIsConsoleOpen] = useState(false)
-  
-
-
-  const [files, setFiles] = useState([
-    {
-      id: "file-1",
-      name: "index.html",
-      language: "html",
-      content: "<!DOCTYPE html>\n<html>\n<head>\n  <title>My Page</title>\n</head>\n<body>\n  <h1>Hello World!</h1>\n</body>\n</html>"
-    },
-    {
-      id: "file-2",
-      name: "style.css",
-      language: "css",
-      content: "body {\n  font-family: Arial;\n  padding: 20px;\n}\n\nh1 {\n  color: #007acc;\n}"
-    },
-    {
-      id: "file-3",
-      name: "script.js",
-      language: "javascript",
-      content: "console.log('Hello');"
-    }
-  ]);
-
   const [fontSize, setFontSize] = useState(14);
   const [isAutoSaveEnabled, setIsAutoSaveEnabled] = useState(true);
   const [editorInstance, setEditorInstance] = useState(null); 
   const [shareCode, setShareCode] = useState(false);
   const [isAddNewFileOpen, setIsAddNewFileOpen] = useState(false);
+  const [consoleLogs, setConsoleLogs] = useState([]);
+  const [isConsoleOpen, setIsConsoleOpen] = useState(false)
+  const [projects, setProjects] = useState([
+  {
+    id: "project-1",
+    name: "My First Project",
+    expanded: true,
+    folders: [],
+    files: [
+      {
+        id: "file-1",
+        name: "index.html",
+        language: "html",
+        content: "<!DOCTYPE html>\n<html>\n<head>\n  <title>My Page</title>\n</head>\n<body>\n  <h1>Hello World!</h1>\n</body>\n</html>"
+      },
+      {
+        id: "file-2",
+        name: "style.css",
+        language: "css",
+        content: "body {\n  font-family: Arial;\n  padding: 20px;\n}\n\nh1 {\n  color: #007acc;\n}"
+      },
+      {
+        id: "file-3",
+        name: "script.js",
+        language: "javascript",
+        content: "console.log('Hello');"
+      }
+    ]
+  }
+]);
 
+const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
+const [targetProjectId, setTargetProjectId] = useState(null);
+const [targetFolderId, setTargetFolderId] = useState(null);
 
-  const PISTON_LANGUAGES = [
+ 
+
+const PISTON_LANGUAGES = [
     'python', 
     'java', 
     'php', 
@@ -65,7 +75,7 @@ function App() {
 
   
  
-
+ 
   const compileScss = (scssCode) => scssCode.replace(/\$primary-color:\s*(.*?);[\s\S]*?color:\s*\$primary-color;/g, 'color: $1;');
   const transpileTs = (tsCode) => tsCode.replace(/const\s+(\w+):\s*string\s*=\s*(.*?);/g, 'const $1 = $2;');
     
@@ -80,45 +90,32 @@ function App() {
 
   useEffect(() => {
     try {
-      const savedFiles = localStorage.getItem("code-files");
-      if (savedFiles) {
-        const parsedFiles = JSON.parse(savedFiles);
-        
-        if (Array.isArray(parsedFiles)) {
-          setFiles(parsedFiles);
-          console.log("successfully loaded the saved files");
-        } else {
-          console.log("Converting old file format to new array format");
-          const convertedFiles = [
-            {
-              id: "file-1",
-              name: "index.html",
-              language: "html",
-              content: parsedFiles.html || ""
-            },
-            {
-              id: "file-2",
-              name: "style.css",
-              language: "css",
-              content: parsedFiles.css || ""
-            },
-            {
-              id: "file-3",
-              name: "script.js",
-              language: "javascript",
-              content: parsedFiles.js || ""
-            }
-          ];
-          setFiles(convertedFiles);
-          localStorage.setItem('code-files', JSON.stringify(convertedFiles));
-        }
+      const savedProjects = localStorage.getItem("code-projects");
+      if (savedProjects) {
+        setProjects(JSON.parse(savedProjects));
+        console.log("Projects loaded from localStorage");
       } else {
-        console.log("No saved files found");
+        console.log("No saved projects found");
       }
     } catch(error) {
-      console.log("Failed to load saved files", error);
+      console.error("Failed to load projects:", error);
     }
   }, []);
+
+  useEffect(() => {
+    if (!isAutoSaveEnabled) return;
+    
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem('code-projects', JSON.stringify(projects));
+        console.log("Projects auto-saved");
+      } catch (error) {
+        console.error("Failed to save projects:", error);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [projects, isAutoSaveEnabled]);
 
   useEffect(() => {
     localStorage.setItem('auto-save-enabled', JSON.stringify(isAutoSaveEnabled));
@@ -142,22 +139,6 @@ function App() {
     }
   }, []);
 
-  useEffect(() => {
-    if (!isAutoSaveEnabled) {
-      console.log("Auto-save is disabled.");
-      return;
-    }   
-    const timer = setTimeout(() => {
-      try {
-        localStorage.setItem('code-files', JSON.stringify(files));
-        console.log("Auto-saved code files.");
-      } catch (error) {
-        console.log("Failed to auto-save:", error);
-      }
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [files, isAutoSaveEnabled]);
 
   useEffect(() => {
     if (!shareCode) return;
@@ -181,8 +162,136 @@ function App() {
     setIsAutoSaveEnabled(prev => !prev);
   };
 
+
+  const handleProjectCreate = () => {
+    const projectName = prompt("Enter Project Name:") || `Project ${projects.length + 1}`;
+
+    const newProject = {
+      id: `project-${Date.now()}`,
+      name: projectName,
+      expanded: true,
+      folders: [],
+      files: []
+    };
+
+    setProjects([...projects, newProject]);
+  };
+
+  const handleProjectDelete = (projectId) => {
+    if (projects.length === 1) {
+      alert("Can't delete the last project!");
+      return;
+    }
+
+    if (!confirm("Delete this project and all its files?")) return;
+
+    setProjects(projects.filter(p => p.id!== projectId));
+
+
+    const activeFile = getActiveFile();
+      if (activeFile?.projectId === projectId) {
+        const remainingFiles = getAllFiles().filter(f => f.projectId !== projectId);
+        if (remainingFiles.length > 0) {
+            setActiveTab(remainingFiles[0].id);
+        }
+      }
+  };
+
+  const handleFolderCreate = (projectId) => {
+    const folderName = prompt("Enter folder name:");
+    if (!folderName) return;
+
+    setProjects(projects.map(project => {
+      if (project.id === projectId) {
+        return{
+          ...project,
+          folders: [
+            ...(project.folders || []),
+            {
+              id: `folder-${Date.now()}`,
+              name: folderName,
+              expanded: true,
+              files: []
+            }
+          ]
+        };
+      }
+      return project;
+    }));
+  };
+
+
+  const handleFolderDelete = (projectId, folderId) => {
+    if (!confirm("Delete this folder and all it's files?")) return;
+
+    setProjects(projects.map(project => {
+      if (project.id === projectId) {
+        return {
+          ...project,
+          folders: project.folders.filter(f => f.id !== folderId)
+        };
+      }
+      return project;
+    }));
+  };
+
+  const handleFileCreateInLocation = (productId, folderId) => {
+    setTargetProjectId(productId);
+    setTargetFolderId(folderId);
+
+    setIsAddNewFileOpen(true);
+  };
+
+  const handleFileDelete = (projectId, folderId, fileId) => {
+    setProjects(projects.map(project => {
+      if (project.id === projectId) {
+        if (folderId) {
+          return {
+            ...project,
+            folders: project.folders.map(folder => {
+              if (folder.id === folderId) {
+                return{
+                  ...folder,
+                  files: folder.files.filter(f => f.id !== fileId)
+                };
+              }
+              return folder;
+             })
+          };
+        } else{
+          return {
+            ...project,
+            files: project.files.filter(f => f.id !== fileId)
+          };
+        }
+      }
+      return project;
+    }));
+
+    if (activeTab === fileId) {
+      const remainingFiles = getAllFiles().filter(f => f.id !== fileId);
+      if (remainingFiles.length > 0) {
+        setActiveTab(remainingFiles[0].id)
+      }
+    }
+ };
+ const handleFileSelect = (fileId) => {
+  setActiveTab(fileId)
+ }
+
   const handleCodeChange = (newCode) => {
-    setFiles(files.map(f => f.id === activeTab ? {...f, content: newCode} : f));
+    setProjects(projects.map(project => ({
+      ...project,
+      files: project.files?.map(file =>
+        file.id === activeTab ? {...file, content: newCode} : file
+      ),
+      folders: project.folders?.map(folder => ({
+        ...folder,
+        files: folder.files?.map(file =>
+          file.id === activeTab ? {...file, content:newCode} : file
+        )
+      }))
+    })));
   };
 
   const handleSaveCode = () => {
@@ -274,6 +383,37 @@ function App() {
     }
     };
 
+    const getAllFiles = () => {
+      const allFiles = [];
+
+      projects.forEach(project => {
+        project.files?.forEach(file => {
+          allFiles.push({
+            ...file,
+            projectId: project.id,
+            folderId: null
+          });
+        });
+
+        project.folders?.forEach(folder => {
+          folder.files?.forEach(file => {
+            allFiles.push({
+              ...file,
+              projectId: project.id,
+              folderId: folder.id
+            });
+          });
+        });
+      });
+
+      return allFiles;
+    };
+    const getActiveFile = () => {
+      return getAllFiles().find(f => f.id === activeTab) || getAllFiles()[0];
+    };
+
+    
+
  const handleRunCode = async () => {
     console.log("Running code...");
     setPistonOutput(null);
@@ -286,7 +426,7 @@ function App() {
     }
    
 
-  const hasWebFiles = files.some(f => 
+  const hasWebFiles = getAllFiles().some(f => 
     f.language === 'html' || 
     f.language === 'css' || 
     f.language === 'scss' || 
@@ -346,9 +486,11 @@ function App() {
 
 
   const handleGeneratePreview = () => {
-    const htmlFiles = files.filter(f => f.language === 'html');
-    const cssFiles = files.filter(f => f.language === 'css' || f.language === 'scss');
-    const jsFiles = files.filter(f => f.language === 'javascript' || f.language === 'typescript');
+    const allFiles = getAllFiles();
+
+    const htmlFiles = allFiles.filter(f => f.language === 'html');
+    const cssFiles = allFiles.filter(f => f.language === 'css' || f.language === 'scss');
+    const jsFiles = allFiles.filter(f => f.language === 'javascript' || f.language === 'typescript');
     
     let mainHtmlFile = htmlFiles.find(f => f.name.toLowerCase().includes('index'));
     if (!mainHtmlFile) {
@@ -546,10 +688,7 @@ function App() {
     setOutputCode(combinedCode);
 };
 
-  const getActiveFile = () => {
-    return files.find(f => f.id === activeTab) || files[0];
-  };
-
+  
   const handleFIleCreation = ({ name, language }) => {
     const newFile = {
       id: `file-${Date.now()}`,
@@ -558,25 +697,61 @@ function App() {
       content: getDefaultContent(language.id)
     };
 
-    setFiles([...files, newFile]);
-    setActiveTab(newFile.id);
-    console.log('new file created:', newFile);
+   const projectId = targetProjectId || projects[0]?.id;
+   const folderId = targetFolderId;
+
+   if (!projectId) {
+    alert("No project available!");
+    return;
+   }
+   setProjects(projects.map(project => {
+    if (project.id === projectId) {
+      if (folderId) {
+        return {
+          ...project,
+          folders: project.folders.map(folder => {
+            if (folder.id === folderId) {
+              return {
+                ...folder,
+                files: [...folder.files, newFile]
+              };
+            }
+             return folder;
+          })
+        };
+      }
+      
+     
+      return {
+        ...project,
+        files: [...project.files, newFile]
+      };
+    }
+    return project;
+  }));
+  setTargetProjectId(null);
+  setTargetFolderId(null);
+  
+
+  setActiveTab(newFile.id);
+  console.log('New file created:', newFile);
+
   };
 
   const deleteFiles = (fileId) => {
-    if (files.length === 1) {
-      alert("Can't delete the last file");
-      return;
-    }
+  const allFiles = getAllFiles();
+  
+  if (allFiles.length === 1) {
+    alert("Can't delete the last file");
+    return;
+  }
 
-    if (activeTab === fileId) {
-      const fileIndex = files.findIndex(f => f.id === fileId);
-      const newIndex = fileIndex > 0 ? fileIndex - 1 : 1;
-      setActiveTab(files[newIndex].id);
-    }
-
-    setFiles(files.filter(f => f.id !== fileId));
-  };
+  const fileToDelete = allFiles.find(f => f.id === fileId);
+  if (!fileToDelete) return;
+  
+ 
+  handleFileDelete(fileToDelete.projectId, fileToDelete.folderId, fileId);
+};
 
     
 return (
@@ -607,7 +782,9 @@ return (
           setActiveMobileView(view);
           if (view !== "preview") setActiveTab(view); 
         }}
-        files={files}
+        files={getAllFiles()}
+        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+        
       />
 
       {isMobile ? (
@@ -616,7 +793,7 @@ return (
             activeTab={activeTab}
             onTabChange={setActiveTab}
             activeMobileView={activeMobileView}
-            files={files}
+            files={getAllFiles()}
             onCodeChange={handleCodeChange}
             isDark={isDark}
             fontSize={fontSize}
@@ -624,10 +801,12 @@ return (
             onEditorReady={handleEditorReady}
             onAddFile={() => setIsAddNewFileOpen(true)}
             onDeleteFile={deleteFiles}
+            onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+
           />
           <PreviewPanel 
             activeMobileView={activeMobileView}
-            files={files}
+            files={getAllFiles()}
             outputCode={outputCode}
             fontSize={fontSize}
             pistonOutput={pistonOutput}
@@ -679,7 +858,7 @@ return (
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
                 activeMobileView={activeMobileView}
-                files={files}
+                files={getAllFiles()}
                 onCodeChange={handleCodeChange}
                 isDark={isDark}
                 fontSize={fontSize}
@@ -687,6 +866,7 @@ return (
                 onEditorReady={handleEditorReady}
                 onAddFile={() => setIsAddNewFileOpen(true)}
                 onDeleteFile={deleteFiles}
+                onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
               />
             </div>
 
@@ -699,7 +879,7 @@ return (
             }}>
               <PreviewPanel 
                 activeMobileView={activeMobileView}
-                files={files}
+                files={getAllFiles()}
                 outputCode={outputCode}
                 fontSize={fontSize}
                 pistonOutput={pistonOutput}
@@ -722,6 +902,20 @@ return (
         onToggleAutoSave={toggleAutoSave}
         onShareCode={handleShareCode}
       />
+      {isSidebarOpen && (
+        <FileExplorer
+          projects={projects}
+          onProjectCreate={handleProjectCreate}
+          onProjectDelete={handleProjectDelete}
+          onFolderCreate={handleFolderCreate}
+          onFolderDelete={handleFolderDelete}
+          onFileCreate={handleFileCreateInLocation}
+          onFileDelete={handleFileDelete}
+          onFileSelect={handleFileSelect}
+          activeFileId={activeTab}
+          isDark={isDark}
+        />
+      )}
 
       <AddNewFIle
         isOpen={isAddNewFileOpen}

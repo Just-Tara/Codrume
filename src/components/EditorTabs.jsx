@@ -1,13 +1,14 @@
 import React from 'react';
 import { Plus, X, Folder } from 'lucide-react';
 
-function EditorTabs({ activeTab, onTabChange, onAddFile, files, onDeleteFile }) {
+function EditorTabs({ activeTab, onTabChange, onAddFile, files, onDeleteFile, onToggleSidebar }) {
   return (
     <div className="hidden md:flex bg-gray-800 border-b border-gray-700  overflow-x-auto">
       <button
         className='flex items-center text-gray-400  hover:text-gray-200 transition bg-gray-700 pl-2 pr-3' 
         aria-label="Toggle file explorer"
         title='File Explorer'
+        onClick={onToggleSidebar}
       >
         <Folder size={20} />
       </button>
