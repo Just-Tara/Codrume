@@ -15,7 +15,8 @@ function EditorPanel({
     onEditorReady,
     onAddFile,
     onDeleteFile,
-    onToogleSidebar
+    onToggleSidebar,
+    isSidebarOpen 
   }) {
   
   
@@ -42,7 +43,8 @@ function EditorPanel({
         onAddFile={onAddFile}
         files={files}
         onDeleteFile={onDeleteFile}
-        onToggleSidebar={onToogleSidebar}
+        onToggleSidebar={onToggleSidebar}
+        isSidebarOpen = {isSidebarOpen}
       />
       
       <div className='flex-1 overflow-hidden'>

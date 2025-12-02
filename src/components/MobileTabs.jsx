@@ -1,43 +1,49 @@
 import React from 'react';
-import { Plus, X, Folder} from 'lucide-react';
+import { X, Folder, FolderOpen } from 'lucide-react';
 
-function MobileTabs({ activeView, onViewChange, files, onToggleSidebar, onFileOpen  }) {
-  const displayFiles = files
-  
+function MobileTabs({ activeView, onDeleteFile, onViewChange, files, onToggleSidebar, isSidebarOpen }) {
   return (
     <div className="md:hidden bg-gray-800 border-b border-gray-700 flex">
       
-     <button
-            className='flex items-center cursor-pointer text-gray-400  hover:text-gray-200 transition bg-gray-700 pl-2 pr-3' 
-            aria-label="Toggle file explorer"
-            title='File Explorer'
-            onClick={onToggleSidebar}
-          >
-            <Folder size={20} />
-          </button>
+      <button
+        className='flex items-center cursor-pointer text-gray-400 hover:text-gray-200 transition bg-gray-700 pl-2 pr-3' 
+        aria-label="Toggle file explorer"
+        title='File Explorer'
+        onClick={onToggleSidebar}
+      >
+       {isSidebarOpen ?  <FolderOpen size={20}/> :  <Folder size={20} />}
+      </button>
 
-      {displayFiles.map(file => (
-         <button key={file.id} 
-         onClick={() => onViewChange(file.id)}
-         
-          className={`flex-1 py-3 text-xs font-medium border-b-2 transition ${
+  
+      {files.map(file => (
+        <div 
+          key={file.id} 
+          className={`flex-1 py-3 px-2 text-xs font-medium border-b-2 transition flex items-center justify-center gap-1 ${
             activeView === file.id
               ? 'text-gray-200 border-blue-500'
               : 'text-gray-500 border-transparent'
           }`}
         >
-          {file.name}
+          <span 
+            onClick={() => onViewChange(file.id)}
+            className="cursor-pointer truncate"
+          >
+            {file.name}
+          </span>
+          
           {files.length > 1 && (
-            <X 
-              size={12}   
-              className="inline ml-1 hover:text-red-400 cursor-pointer opacity-0 hover:opacity-100 transition "
+            <button
               onClick={(e) => {
                 e.stopPropagation();
+                onDeleteFile(file.id);
               }}
-            />
+              className="hover:text-red-400 transition"
+              title="Delete file"
+            >
+              <X size={12} />
+            </button>
           )}
-        </button>
-
+        </div>
       ))}
       
   

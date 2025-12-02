@@ -30,7 +30,7 @@ function App() {
   {
     id: "project-1",
     name: "My First Project",
-    expanded: true,
+    expanded: false,
     folders: [],
     files: [
       {
@@ -58,6 +58,7 @@ function App() {
 const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
 const [targetProjectId, setTargetProjectId] = useState(null);
 const [targetFolderId, setTargetFolderId] = useState(null);
+const [activeProjectId, setActiveProjectId] = useState("project-1");
 
  
 
@@ -169,13 +170,42 @@ const PISTON_LANGUAGES = [
     const newProject = {
       id: `project-${Date.now()}`,
       name: projectName,
-      expanded: true,
+      expanded: false,
       folders: [],
       files: []
     };
 
-    setProjects([...projects, newProject]);
+    setProjects([newProject, ...projects]);
+    setActiveProjectId(newProject.id);
+    
   };
+
+  const getFilesFromProject = (projectId) => {
+    const project = projects.find(p => p.id === projectId);
+    if (!project)  return [];
+
+    const files = [];
+
+    project.files?.forEach(file => {
+      files.push({
+        ...files,
+        projectId: project.id,
+        folderId: null
+      });
+    });
+
+
+    project.folders?.forEach(folder => {
+      folder.files?.forEach(file => {
+        files.push({
+          ...file,
+          projectId: project.id,
+          folderId: folder.id
+        });
+      });
+    });
+    return files;
+  }
 
   const handleProjectDelete = (projectId) => {
     if (projects.length === 1) {
@@ -235,8 +265,8 @@ const PISTON_LANGUAGES = [
     }));
   };
 
-  const handleFileCreateInLocation = (productId, folderId) => {
-    setTargetProjectId(productId);
+  const handleFileCreateInLocation = (projectId, folderId) => {
+    setTargetProjectId(projectId);
     setTargetFolderId(folderId);
 
     setIsAddNewFileOpen(true);
@@ -276,8 +306,15 @@ const PISTON_LANGUAGES = [
     }
  };
  const handleFileSelect = (fileId) => {
-  setActiveTab(fileId)
- }
+  setActiveTab(fileId);
+
+  const allFiles = getAllFiles();
+  const selectedFile = allFiles.find(f => f.id === fileId);
+
+  if (selectedFile) {
+    setActiveProjectId(selectedFile.id);
+  }
+ };
 
   const handleCodeChange = (newCode) => {
     setProjects(projects.map(project => ({
@@ -296,7 +333,7 @@ const PISTON_LANGUAGES = [
 
   const handleSaveCode = () => {
     try {
-      localStorage.setItem('code-files', JSON.stringify(files));
+      localStorage.setItem('code-files', JSON.stringify(projects));
       console.log("code saved successfully!");
     } catch (error) {
       console.log("failed to save:", error);
@@ -305,7 +342,7 @@ const PISTON_LANGUAGES = [
   
   const handleShareCode = async () => {
     try {
-      const jsonString = JSON.stringify(files);
+      const jsonString = JSON.stringify(projects);
       const base64Encoded = btoa(jsonString);
       const shareableURL = `${window.location.origin}${window.location.pathname}?code=${base64Encoded}`;
       await navigator.clipboard.writeText(shareableURL);
@@ -422,11 +459,15 @@ const PISTON_LANGUAGES = [
     if (currentActiveFile.language === 'javascript' || currentActiveFile.language === 'typescript') {
       setOutputCode("");
       executeFontendCode(currentActiveFile.content, currentActiveFile.language);
+
+      if (isMobile) {
+        setIsMobile("preview");
+      }
       return;
     }
    
 
-  const hasWebFiles = getAllFiles().some(f => 
+  const hasWebFiles = getFilesFromProject(activeProjectId).some(f => 
     f.language === 'html' || 
     f.language === 'css' || 
     f.language === 'scss' || 
@@ -437,10 +478,14 @@ const PISTON_LANGUAGES = [
       currentActiveFile.language === 'css' || 
       currentActiveFile.language === 'scss')) {
     handleGeneratePreview();
+
+    if (isMobile) {
+      setActiveMobileView("preview");
+    }
     return;
   }
     
-    
+    //piston api execution
 
     if (PISTON_LANGUAGES.includes(currentActiveFile.language)) {
       setOutputCode("");
@@ -466,6 +511,9 @@ const PISTON_LANGUAGES = [
             language: currentActiveFile.language
           });
         }
+        if (isMobile) {
+          setActiveMobileView("preview");
+        }
       } catch (error) {
         console.log("Piston API execution failed:", error);
         setPistonOutput({
@@ -486,7 +534,7 @@ const PISTON_LANGUAGES = [
 
 
   const handleGeneratePreview = () => {
-    const allFiles = getAllFiles();
+    const allFiles = getFilesFromProject(activeProjectId);
 
     const htmlFiles = allFiles.filter(f => f.language === 'html');
     const cssFiles = allFiles.filter(f => f.language === 'css' || f.language === 'scss');
@@ -506,8 +554,21 @@ const PISTON_LANGUAGES = [
     const virtualHtmlFiles = {};
     const virtualCssFiles = {};
     const virtualJsFiles = {};
+
+    const getFilePath = (file) => {
+      if (file.folderId) {
+        const project = projects.find( p => p.id === file.projectId);
+        const folder = project?.folders.find(f => f.id === file.folderId);
+        if (folder) {
+          return `${folder.name}/${file.name}`;
+        }
+      }
+      return file.name;
+    }
     
     htmlFiles.forEach(file => {
+      const path = getFilePath(file);
+      virtualHtmlFiles[path] = file.content;
       virtualHtmlFiles[file.name] = file.content;
     });
     
@@ -517,15 +578,39 @@ const PISTON_LANGUAGES = [
         cssContent = compileScss(file.content);
       }
 
+      const path = getFilePath(file);
+      virtualCssFiles[path] = cssContent;
       virtualCssFiles[file.name] = cssContent;
+
       const nameWithoutExt = file.name.replace(/\.(css)$/, '');
       virtualCssFiles[nameWithoutExt] = cssContent;
+
+      if (file.language === 'scss') {
+        const cssFileName = file.name.replace('.scss', '.css');
+        const cssPath = path.replace('.scss', '.css');
+        virtualCssFiles[cssFileName] = cssContent;
+        virtualCssFiles[cssPath] = cssContent;
+      }
     });
     
     jsFiles.forEach(file => {
-      virtualJsFiles[file.name] = file.content;
-      const nameWithoutExt = file.name.replace(/\.(js)$/, '');
-      virtualJsFiles[nameWithoutExt] = file.content;
+      let jsContent = file.content;
+      if (file.language === 'typescript') {
+        jsContent = transpileTs(file.content);
+      }
+      const path = getFilePath(file)
+      virtualJsFiles[path] = jsContent;
+      virtualJsFiles[file.name] = jsContent;
+
+      const nameWithoutExt = file.name.replace(/\.(js|ts)$/, '');
+      virtualJsFiles[nameWithoutExt] = jsContent;
+
+      if (file.language === "typescript") {
+        const jsFileName = file.name.replace('.ts', '.js');
+        const jsPath = path.replace('.ts', '.js');
+        virtualJsFiles[jsFileName] = jsContent;
+        virtualJsFiles[jsPath] = jsContent;
+      }
     });
 
   
@@ -540,7 +625,7 @@ const PISTON_LANGUAGES = [
       function loadVirtualCSS(filename) {
         let content = window.__virtualCssFiles__[filename];
         if (!content) {
-          const nameWithoutExt = filename.replace(/\\.(css)$/, '');
+          const nameWithoutExt = filename.replace(/\\.(css|scss)$/, '');
           content = window.__virtualCssFiles__[nameWithoutExt];
         }
         if (!content) {
@@ -555,15 +640,15 @@ const PISTON_LANGUAGES = [
         styleElement.setAttribute('data-virtual-css', filename);
         styleElement.textContent = content; 
         document.head.appendChild(styleElement);
-        console.log('✅ CSS:', filename);
+        console.log('CSS:', filename);
       }
       
-      // Removed complex JSX/TSX/Module functions
+     
       
       function loadVirtualJS(filename) {
         let content = window.__virtualJsFiles__[filename];
         if (!content) {
-          const nameWithoutExt = filename.replace(/\\.(js)$/, '');
+          const nameWithoutExt = filename.replace(/\\.(js|ts)$/, '');
           content = window.__virtualJsFiles__[nameWithoutExt];
         }
         if (!content) {
@@ -574,27 +659,35 @@ const PISTON_LANGUAGES = [
           return;
         }
         window.__loadedResources__.js.push(filename);
-        
-        const scriptElement = document.createElement('script');
-        scriptElement.setAttribute('data-virtual-js', filename);
-        scriptElement.textContent = content;
-        document.body.appendChild(scriptElement);
-        
-        console.log('✅ JS:', filename);
+
+        try{
+            const scriptElement = document.createElement('script');
+            scriptElement.setAttribute('data-virtual-js', filename);
+            scriptElement.textContent = content;
+            document.body.appendChild(scriptElement);
+            console.log('✅ JS:', filename);
+        } catch(error) {
+          console.error("Error loading JS:", filename, error);
+        }  
+       
       }
       
-      function loadExternalResources(htmlContent) {
+          function loadExternalResources(htmlContent) {
         const parser = new DOMParser();
         const doc = parser.parseFromString(htmlContent, 'text/html');
         doc.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
           const href = link.getAttribute('href');
-          if (href && (href.endsWith('.css'))) loadVirtualCSS(href);
+          if (href && (href.endsWith('.css') || href.endsWith('.scss'))) {  // ✅ FIX: Added href.endsWith
+            loadVirtualCSS(href);
+          }
         });
         doc.querySelectorAll('script[src]').forEach(script => {
           const src = script.getAttribute('src');
-          if (src && /\\.(js)$/.test(src)) loadVirtualJS(src);
+          if (src && (src.endsWith('.js') || src.endsWith('.ts'))) {
+            loadVirtualJS(src);
+          }
         });
-      }
+      } 
       
       function loadVirtualPage(filename) {
         const content = window.__virtualHtmlFiles__[filename];
@@ -607,9 +700,9 @@ const PISTON_LANGUAGES = [
         const parser = new DOMParser();
         const doc = parser.parseFromString(content, 'text/html');
         
-        document.body.innerHTML = doc.body.innerHTML; // Set body first
+        document.body.innerHTML = doc.body.innerHTML; 
         
-        loadExternalResources(content); // Then load resources
+        loadExternalResources(content);
     
         attachLinkListeners();
       }
@@ -626,7 +719,7 @@ const PISTON_LANGUAGES = [
         });
       }
       
-      console.log("Ready");
+      console.log("Virtual page system initialized.");
       loadVirtualPage(window.__currentPage__);
     `;
 
@@ -755,64 +848,108 @@ const PISTON_LANGUAGES = [
 
     
 return (
-    <div className={`${isDark ? "dark" : ""} h-screen flex flex-col`}>
-      <Header
-        isDark={isDark}
-        onToggleTheme={() => setIsDark(!isDark)}
-        onMenuOpen={() => setIsMobileMenuOpen(true)}
-        onRunCode={handleRunCode}
-        onIncreaseFontSize={increaseFontSize}
-        onDecreaseFontSize={decreaseFontSize}
-        onSaveCode={handleSaveCode}
-        onFormatCode={handleFormatCode}
-        isAutoSaveEnabled={isAutoSaveEnabled}
-        onToggleAutoSave={toggleAutoSave}
-        onShareCode={handleShareCode}
-      />
-      {shareCode && (
-        <div className="fixed top-20 right-5 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2 animate-fade-in">
-          <span className="font-semibold">✓</span>
-          <span>Shareable URL copied to clipboard!</span>
-        </div>
-      )}
+  <div className={`${isDark ? "dark" : ""} h-screen flex flex-col`}>
+    <Header
+      isDark={isDark}
+      onToggleTheme={() => setIsDark(!isDark)}
+      onMenuOpen={() => setIsMobileMenuOpen(true)}
+      onRunCode={handleRunCode}
+      onIncreaseFontSize={increaseFontSize}
+      onDecreaseFontSize={decreaseFontSize}
+      onSaveCode={handleSaveCode}
+      onFormatCode={handleFormatCode}
+      isAutoSaveEnabled={isAutoSaveEnabled}
+      onToggleAutoSave={toggleAutoSave}
+      onShareCode={handleShareCode}
+    />
+    
+    {shareCode && (
+      <div className="fixed top-20 right-5 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2 animate-fade-in">
+        <span className="font-semibold">✓</span>
+        <span>Shareable URL copied to clipboard!</span>
+      </div>
+    )}
 
-      <MobileTabs
-        activeView={activeMobileView}
-        onViewChange={(view) => {
-          setActiveMobileView(view);
-          if (view !== "preview") setActiveTab(view); 
-        }}
-        files={getAllFiles()}
-        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+    <MobileTabs
+      activeView={activeMobileView}
+      onViewChange={(view) => {
+        setActiveMobileView(view);
+        if (view !== "preview") setActiveTab(view); 
+      }}
+      files={getAllFiles()}
+      onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+      onDeleteFile={deleteFiles}
+      isSidebarOpen = {isSidebarOpen}
+    />
+
+    {isMobile ? (
+     
+      <div className="flex-1 flex overflow-hidden">
+        {isSidebarOpen && (
+          <div className="fixed inset-0 z-50 bg-black/20" onClick={() => setIsSidebarOpen(false)}>
+            <div className="absolute left-0 top-26 bottom-8.5 w-64" onClick={(e) => e.stopPropagation()}>
+              <FileExplorer
+                projects={projects}
+                onProjectCreate={handleProjectCreate}
+                onProjectDelete={handleProjectDelete}
+                onFolderCreate={handleFolderCreate}
+                onFolderDelete={handleFolderDelete}
+                onFileCreate={handleFileCreateInLocation}
+                onFileDelete={handleFileDelete}
+                onFileSelect={handleFileSelect}
+                activeFileId={activeTab}
+                isDark={isDark}
+              />
+            </div>
+          </div>
+        )}
         
-      />
-
-      {isMobile ? (
-        <div className="flex-1 flex overflow-hidden">
-          <EditorPanel
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            activeMobileView={activeMobileView}
-            files={getAllFiles()}
-            onCodeChange={handleCodeChange}
-            isDark={isDark}
-            fontSize={fontSize}
-            isAutoSaveEnabled={isAutoSaveEnabled}
-            onEditorReady={handleEditorReady}
-            onAddFile={() => setIsAddNewFileOpen(true)}
-            onDeleteFile={deleteFiles}
-            onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-
-          />
-          <PreviewPanel 
-            activeMobileView={activeMobileView}
-            files={getAllFiles()}
-            outputCode={outputCode}
-            fontSize={fontSize}
-            pistonOutput={pistonOutput}
-          />
-        </div>
-      ) : (
+        <EditorPanel
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          activeMobileView={activeMobileView}
+          files={getAllFiles()}
+          onCodeChange={handleCodeChange}
+          isDark={isDark}
+          fontSize={fontSize}
+          isAutoSaveEnabled={isAutoSaveEnabled}
+          onEditorReady={handleEditorReady}
+          onAddFile={() => setIsAddNewFileOpen(true)}
+          onDeleteFile={deleteFiles}
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+         isSidebarOpen = {isSidebarOpen}
+        />
+        
+        <PreviewPanel 
+          activeMobileView={activeMobileView}
+          files={getAllFiles()}
+          outputCode={outputCode}
+          fontSize={fontSize}
+          pistonOutput={pistonOutput}
+        />
+      </div>
+    ) : (
+  
+      <div className="flex-1 flex overflow-hidden">
+       {isSidebarOpen && (
+          <div className="fixed inset-0 z-50 bg-black/20" onClick={() => setIsSidebarOpen(false)}>
+            <div className="absolute left-0 top-24 bottom-8.5 w-64" onClick={(e) => e.stopPropagation()}>
+              <FileExplorer
+                projects={projects}
+                onProjectCreate={handleProjectCreate}
+                onProjectDelete={handleProjectDelete}
+                onFolderCreate={handleFolderCreate}
+                onFolderDelete={handleFolderDelete}
+                onFileCreate={handleFileCreateInLocation}
+                onFileDelete={handleFileDelete}
+                onFileSelect={handleFileSelect}
+                activeFileId={activeTab}
+                isDark={isDark}
+              />
+            </div>
+          </div>
+        )}
+        
         <div className="flex-1 overflow-hidden">
           <Split
             style={{ height: '100%', width: '100%' }}
@@ -847,6 +984,7 @@ return (
               </div>
             )}
           >
+            {/* Editor Panel */}
             <div style={{   
               minWidth: 300, 
               width: '50%', 
@@ -867,9 +1005,11 @@ return (
                 onAddFile={() => setIsAddNewFileOpen(true)}
                 onDeleteFile={deleteFiles}
                 onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+                isSidebarOpen = {isSidebarOpen}
               />
             </div>
 
+            {/* Preview Panel */}
             <div style={{ 
               minWidth: 300, 
               flex: 1, 
@@ -887,50 +1027,37 @@ return (
             </div>
           </Split>
         </div>
-      )}
+      </div>
+    )}
 
-      <MobileMenu
-        isDark={isDark}
-        onToggleTheme={() => setIsDark(!isDark)}
-        isOpen={isMobileMenuOpen}
-        onSaveCode={handleSaveCode}
-        onFormatCode={handleFormatCode}
-        onClose={() => setIsMobileMenuOpen(false)}
-        onIncreaseFontSize={increaseFontSize}
-        onDecreaseFontSize={decreaseFontSize}
-        isAutoSaveEnabled={isAutoSaveEnabled}
-        onToggleAutoSave={toggleAutoSave}
-        onShareCode={handleShareCode}
-      />
-      {isSidebarOpen && (
-        <FileExplorer
-          projects={projects}
-          onProjectCreate={handleProjectCreate}
-          onProjectDelete={handleProjectDelete}
-          onFolderCreate={handleFolderCreate}
-          onFolderDelete={handleFolderDelete}
-          onFileCreate={handleFileCreateInLocation}
-          onFileDelete={handleFileDelete}
-          onFileSelect={handleFileSelect}
-          activeFileId={activeTab}
-          isDark={isDark}
-        />
-      )}
+    <MobileMenu
+      isDark={isDark}
+      onToggleTheme={() => setIsDark(!isDark)}
+      isOpen={isMobileMenuOpen}
+      onSaveCode={handleSaveCode}
+      onFormatCode={handleFormatCode}
+      onClose={() => setIsMobileMenuOpen(false)}
+      onIncreaseFontSize={increaseFontSize}
+      onDecreaseFontSize={decreaseFontSize}
+      isAutoSaveEnabled={isAutoSaveEnabled}
+      onToggleAutoSave={toggleAutoSave}
+      onShareCode={handleShareCode}
+    />
 
-      <AddNewFIle
-        isOpen={isAddNewFileOpen}
-        onClose={() => setIsAddNewFileOpen(false)}
-        onCreateFIle={handleFIleCreation}
-      />
+    <AddNewFIle
+      isOpen={isAddNewFileOpen}
+      onClose={() => setIsAddNewFileOpen(false)}
+      onCreateFIle={handleFIleCreation}
+    />
 
-      <Console
-        isConsoleOpen={isConsoleOpen}
-        onToggle= {() => setIsConsoleOpen(!isConsoleOpen)}
-        logs={consoleLogs}
-        onClear={handleClearConsole}
-      />
-    </div>
-  );
+    <Console
+      isConsoleOpen={isConsoleOpen}
+      onToggle={() => setIsConsoleOpen(!isConsoleOpen)}
+      logs={consoleLogs}
+      onClear={handleClearConsole}
+    />
+  </div>
+);
 }
 
 export default App;

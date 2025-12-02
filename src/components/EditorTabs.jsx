@@ -1,17 +1,19 @@
 import React from 'react';
-import { Plus, X, Folder } from 'lucide-react';
+import { Plus, X, Folder, FolderOpen } from 'lucide-react';
 
-function EditorTabs({ activeTab, onTabChange, onAddFile, files, onDeleteFile, onToggleSidebar }) {
+function EditorTabs({ activeTab, onTabChange, onAddFile, files, onDeleteFile, onToggleSidebar, isSidebarOpen }) {
   return (
     <div className="hidden md:flex bg-gray-800 border-b border-gray-700  overflow-x-auto">
-      <button
-        className='flex items-center text-gray-400  hover:text-gray-200 transition bg-gray-700 pl-2 pr-3' 
-        aria-label="Toggle file explorer"
-        title='File Explorer'
-        onClick={onToggleSidebar}
-      >
-        <Folder size={20} />
-      </button>
+      
+       <button
+          className='flex items-center cursor-pointer text-gray-400  hover:text-gray-200 transition bg-gray-700 pl-2 pr-3' 
+          aria-label="Toggle file explorer"
+          title='File Explorer'
+          onClick={onToggleSidebar}
+        >
+         {isSidebarOpen ?  <FolderOpen size={20}/> :  <Folder size={20} />}
+        </button>
+
       {files.map(file => (
         <div 
           key={file.id}
