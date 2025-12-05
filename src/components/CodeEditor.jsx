@@ -43,6 +43,11 @@ function CodeEditor({ value, onChange, language, theme, fontSize, onEditorMount 
         scrollBeyondLastLine: false,
         automaticLayout: true,
         tabSize: 2,
+        hideCursorInOverviewRuler: true,
+        matchBrackets: 'always',
+        minimap: {
+          enabled:true
+        },
         wordWrap: 'on',
         padding: { top: 16 },
         renderLineHighlight: 'all',
@@ -53,6 +58,9 @@ function CodeEditor({ value, onChange, language, theme, fontSize, onEditorMount 
           horizontalScrollbarSize: 10,
         },
         suggestOnTriggerCharacters: true,
+        selectOnLineNumbers: true,
+        cursorStyle: 'line',
+        automaticLayout: true,
         quickSuggestions: true,
         formatOnPaste: true,
         formatOnType: true,

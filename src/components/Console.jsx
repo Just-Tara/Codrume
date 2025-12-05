@@ -103,7 +103,7 @@ function Console ({ isConsoleOpen, onToggle, logs, onClear }) {
                     key={index} 
                     className={`py-1 border-b border-gray-800 ${getLogColor(log.type)}`}
                   >
-                    <span className="mr-2">{getLogIcon(log.type)}</span>
+                    <span className="mr-2 text-[10px] text-gray-300">{getLogIcon(log.type)}</span>
                     <span className="text-gray-400 text-xs mr-2">{log.timestamp}</span>
                     <span>{log.message}</span>
                   </div>

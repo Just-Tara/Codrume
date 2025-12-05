@@ -178,6 +178,29 @@ const PISTON_LANGUAGES = [
     }, [openTabs]);
 
 
+    // useEffect to catch logs coming from the iframe
+
+    useEffect ( () => {
+      const handleIframeMessage = (event) => {
+        if (event.data && event.data.source  === 'iframe-console') {
+          const { type, message } = event.data;
+
+          setConsoleLogs(prev => [...prev, {
+            message: message,
+            type: type,
+            timestamp: new Date().toLocaleTimeString()
+          }]);
+
+          if (type === 'error') setIsConsoleOpen(true);
+        }
+      };
+
+      window.addEventListener('message', handleIframeMessage);
+      return () => window.removeEventListener('message', handleIframeMessage);
+    }, []); 
+
+
+
 
   // useEffect to RESET shareCode after 3 seconds
   useEffect(() => {
@@ -623,6 +646,55 @@ const PISTON_LANGUAGES = [
     const cssFiles = allFiles.filter(f => f.language === 'css' || f.language === 'scss');
     const jsFiles = allFiles.filter(f => f.language === 'javascript' || f.language === 'typescript');
     
+
+
+    const consoleInterceptorScript = `
+
+        <script>
+        (function() {
+          const oldLog = console.log;
+          const oldError = console.error;
+          const oldWarn = console.warn;
+          const oldInfo = console.info;
+
+          function sendToParent(type, args) {
+            try {
+
+              const message = args.map(arg => {
+                if (typeof arg === 'object') {
+                  try { return JSON.stringify(arg); } catch(e) 
+                  { return '[Object]'; }
+                }
+                return String(arg);
+              }).join(' ');
+
+              
+              window.parent.postMessage({
+                source: 'iframe-console',
+                type: type,
+                message: message
+              }, '*');
+            } catch (e) {
+              
+            }
+          }
+
+          console.log = function(...args)
+           { sendToParent('log', args); 
+            oldLog.apply(console, args); };
+          console.error = function(...args) 
+            { sendToParent('error', args); 
+             oldError.apply(console, args); };
+          console.warn = function(...args) 
+            { sendToParent('warn', args); 
+             oldWarn.apply(console, args); };
+          console.info = function(...args)
+           { sendToParent('info', args); 
+            oldInfo.apply(console, args); };
+        })();
+      </script>
+    
+    `
     let mainHtmlFile = htmlFiles.find(f => f.name.toLowerCase().includes('index'));
     if (!mainHtmlFile) {
       mainHtmlFile = htmlFiles[0];
@@ -712,7 +784,6 @@ const PISTON_LANGUAGES = [
           content = window.__virtualCssFiles__[nameWithoutExt];
         }
         if (!content) {
-          console.warn('CSS file not found:', filename);
           return;
         }
         if (window.__loadedResources__.css.includes(filename)) {
@@ -723,7 +794,7 @@ const PISTON_LANGUAGES = [
         styleElement.setAttribute('data-virtual-css', filename);
         styleElement.textContent = content; 
         document.head.appendChild(styleElement);
-        console.log('CSS:', filename);
+        
       }
       
      
@@ -748,7 +819,6 @@ const PISTON_LANGUAGES = [
             scriptElement.setAttribute('data-virtual-js', filename);
             scriptElement.textContent = content;
             document.body.appendChild(scriptElement);
-            console.log(' JS:', filename);
         } catch(error) {
           console.error("Error loading JS:", filename, error);
         }  
@@ -779,7 +849,6 @@ const PISTON_LANGUAGES = [
           return;
         }
         window.__currentPage__ = filename;
-        console.log(' Loading:', filename);
         const parser = new DOMParser();
         const doc = parser.parseFromString(content, 'text/html');
         
@@ -802,7 +871,7 @@ const PISTON_LANGUAGES = [
         });
       }
       
-      console.log("Virtual page system initialized.");
+    
       loadVirtualPage(window.__currentPage__);
     `;
 
@@ -832,6 +901,7 @@ const PISTON_LANGUAGES = [
       if (bodyCloseIndex !== -1) {
         const parts = [
           mainHtml.slice(0, bodyCloseIndex),
+          consoleInterceptorScript, 
           '<script>',
           resourceLoadingScript, 
           '</script>',
@@ -839,7 +909,13 @@ const PISTON_LANGUAGES = [
         ];
         combinedCode = parts.join('');
       } else {
-        combinedCode = [mainHtml, '<script>', resourceLoadingScript, '</script>'].join('');
+        combinedCode = [
+            mainHtml, 
+            consoleInterceptorScript,
+            '<script>', 
+            resourceLoadingScript, 
+            '</script>'
+        ].join('');
       }
     } else {
       const parts = [
@@ -852,6 +928,7 @@ const PISTON_LANGUAGES = [
         '</head>\n',
         '<body>\n',
         mainHtml,
+        consoleInterceptorScript,
         '\n<script>\n',
         resourceLoadingScript, 
         '\n</script>\n',
@@ -860,7 +937,7 @@ const PISTON_LANGUAGES = [
       ];
       combinedCode = parts.join('');
     }
-    
+    setConsoleLogs([]);
     setOutputCode(combinedCode);
 };
 
