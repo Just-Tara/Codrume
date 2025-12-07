@@ -1,9 +1,29 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Terminal, X, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 
 function Console ({ isConsoleOpen, onToggle, logs, onClear }) {
      const consoleRef = useRef(null);
      const [isMinimized, setIsMinimized] = useState(false);
+     const groupedLogs = useMemo(() => {
+      const grouped = [];
+
+      logs.forEach((log, index) => {
+        if (index === 0) {
+          grouped.push({...log, count: 1});
+        } else {
+          const lastGrouped = grouped[grouped.length - 1];
+
+          if (lastGrouped.message === log.message && lastGrouped.type === log.type) {
+            lastGrouped.count++;
+            lastGrouped.timestamp = log.timestamp;
+          } else {
+            grouped.push({ ...log, count: 1});
+          }
+        }
+      });
+
+      return grouped;
+     }, [logs])
 
     
     useEffect(() => {
@@ -98,14 +118,19 @@ function Console ({ isConsoleOpen, onToggle, logs, onClear }) {
                   Console is empty. Run your JavaScript/TypeScript code to see output.
                 </div>
               ) : (
-                logs.map((log, index) => (
+                groupedLogs.map((log, index) => (
                   <div 
                     key={index} 
-                    className={`py-1 border-b border-gray-800 ${getLogColor(log.type)}`}
+                    className={`py-1 border-b border-gray-800 flex items-center ${getLogColor(log.type)}`}
                   >
                     <span className="mr-2 text-[10px] text-gray-300">{getLogIcon(log.type)}</span>
                     <span className="text-gray-400 text-xs mr-2">{log.timestamp}</span>
                     <span>{log.message}</span>
+                    {log.count > 1 && (
+                      <span className='ml-2 px-2 py-0.5 bg-gray-700 text-gray-300 text-xs rounded-full font-bold'>
+                        {log.count}
+                      </span>
+                    )}
                   </div>
                 ))
               )}

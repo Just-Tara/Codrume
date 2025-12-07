@@ -27,6 +27,7 @@ function App() {
   const [isAddNewFileOpen, setIsAddNewFileOpen] = useState(false);
   const [consoleLogs, setConsoleLogs] = useState([]);
   const [isConsoleOpen, setIsConsoleOpen] = useState(false)
+  const [isRunning, setIsRunning] = useState(false);
   const [projects, setProjects] = useState([
   {
     id: "project-1",
@@ -542,6 +543,8 @@ const PISTON_LANGUAGES = [
  
 
     const handleRunCode = async () => {
+      setIsRunning(true);
+
   console.log(" Running code...");
   setPistonOutput(null);
 
@@ -550,16 +553,22 @@ const PISTON_LANGUAGES = [
   console.log(" File language:", currentActiveFile.language); 
   
   
-  if (currentActiveFile.language === 'javascript' || currentActiveFile.language === 'typescript') {
-    console.log("Running JS/TS code");
-    setOutputCode("");
-    executeFontendCode(currentActiveFile.content, currentActiveFile.language);
+ 
+    if (currentActiveFile.language === 'javascript' || currentActiveFile.language === 'typescript') {
+      console.log("Running JS/TS code");
+      setOutputCode("");
+      
+    
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      executeFontendCode(currentActiveFile.content, currentActiveFile.language);
 
-    if (isMobile) {
-      setActiveMobileView("preview");
+      if (isMobile) {
+        setActiveMobileView("preview");
+      }
+      setIsRunning(false);
+      return;
     }
-    return;
-  }
  
   
   const projectFiles = getFilesFromProject(activeProjectId);
@@ -576,15 +585,20 @@ const PISTON_LANGUAGES = [
   console.log(" Has web files?", hasWebFiles);
   console.log(" Current file language:", currentActiveFile.language);
 
-  if (hasWebFiles && (currentActiveFile.language === 'html' || 
+    if (hasWebFiles && (currentActiveFile.language === 'html' || 
       currentActiveFile.language === 'css' || 
       currentActiveFile.language === 'scss')) {
-    console.log(" Calling handleGeneratePreview()");
+    console.log("🎨 Calling handleGeneratePreview()");
+    
+    
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
     handleGeneratePreview();
 
     if (isMobile) {
       setActiveMobileView("preview");
     }
+    setIsRunning(false);
     return;
   }
   
@@ -619,6 +633,7 @@ const PISTON_LANGUAGES = [
       if (isMobile) {
         setActiveMobileView("preview");
       }
+      setIsRunning(false);
     } catch (error) {
       console.log("Piston API execution failed:", error);
       setPistonOutput({
@@ -626,12 +641,16 @@ const PISTON_LANGUAGES = [
         content: `Failed to connect or execute via API: ${error.message}`,
         language: currentActiveFile.language
       });
-    } 
+      setIsRunning(false);
+    }  finally{
+      setIsRunning(false);
+    }
     return;
   }
 
   console.log(" No conditions matched!");
   setPistonOutput(null);
+  setIsRunning(false);
 }
 
   const handleClearConsole = () => {
@@ -1016,6 +1035,7 @@ return (
       onToggleTheme={() => setIsDark(!isDark)}
       onMenuOpen={() => setIsMobileMenuOpen(true)}
       onRunCode={handleRunCode}
+      isRunning={isRunning}
       onIncreaseFontSize={increaseFontSize}
       onDecreaseFontSize={decreaseFontSize}
       onSaveCode={handleSaveCode}

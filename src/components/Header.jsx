@@ -12,7 +12,8 @@ export default function Header ({
         onToggleAutoSave, 
         isAutoSaveEnabled,
         onFormatCode,
-        onShareCode
+        onShareCode,
+        isRunning
     }) 
     { return ( 
         <header className={` dark:bg-gray-900 border-b border-gray-700 px-4 py-3 flex items-center justify-between 
@@ -25,10 +26,32 @@ export default function Header ({
                     <option>Vue</option> 
                     <option>Svelte</option>
                 </select> 
-                <button className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded flex items-center gap-2 text-sm font-medium transition
-                " onClick={onRunCode}> 
+                <button className={`cursor-pointer px-4 py-1.5 rounded flex items-center gap-2 text-sm font-medium transition ${
+                    isRunning
+                        ? 'bg-gray-600 cursor-not-allowed'
+                        : 'bg-blue-600 hover:bg-blue-700'
+                } text-white `} 
+                        onClick={onRunCode}
+                        disabled={isRunning}
+                >
+                    {isRunning ? (
+                        <>
+                            <div className="flex gap-1">
+                                <div className='w-2 h-2 bg-white rounded-full animate-bounce' style={{ animationDelay: '0ms'}}></div>
+                                <div className='w-2 h-2 bg-white rounded-full animate-bounce' style={{ animationDelay: '150ms'}}></div>
+                                <div className='w-2 h-2 bg-white rounded-full animate-bounce' style={{ animationDelay: '300ms'}}></div>
+                            </div>
+                            <span>Running...</span>
+                        </>
+                    ) : (
+                        <>
+                            <Play size={14} />
+                            <span>Run Code</span>
+                        </>
+                    )}
+                </button>
+                                    
                     
-                    <Play size={14} /> Run Code </button> 
                 <div className=" hidden md:flex items-center gap-2"> 
                     <button onClick={onSaveCode} 
                         className=" cursor-pointer bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded flex items-center gap-2 text-sm transition"> 

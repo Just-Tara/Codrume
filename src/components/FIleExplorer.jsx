@@ -194,7 +194,7 @@ function ProjectItem({
         </span>
         
         
-        <div className="hidden group-hover:flex items-center gap-1">
+        <div className="md:hidden group-hover:flex items-center gap-1">
          
           <button
             onClick={(e) => {
