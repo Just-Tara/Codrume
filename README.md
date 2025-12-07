@@ -25,7 +25,7 @@ To get started with the editor, follow these steps:
 
 1.  Clone the repository and install the dependencies:
     ```bash
-    git clone https://github.com/your-username/code-editor.git
+    git clone https://github.com/just-tara/code-editor.git
     cd code-editor
     npm install
     ```
