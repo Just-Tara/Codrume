@@ -110,6 +110,16 @@ const PISTON_LANGUAGES = [
     return () => clearTimeout(timer);
   }, [projects, isAutoSaveEnabled]);
 
+
+  fetch('https://emkc.org/api/v2/piston/runtimes')
+  .then(res => res.json())
+  .then(data => {
+    console.log('Total languages:', data.length);
+    data.forEach(lang => {
+      console.log(`${lang.language} - version ${lang.version}`);
+    });
+  });
+
   // useEffect to SAVE auto-save preference to localStorage
   useEffect(() => {
     localStorage.setItem('auto-save-enabled', JSON.stringify(isAutoSaveEnabled));

@@ -1,15 +1,15 @@
 
 const PISTON_LANGUAGE_MAP = {
-    'python': { language: 'python', version: '3.10.0' },
-    'java': { language: 'java', version: 'openjdk-19.0.1' },
+    'python': { language: 'python2', version: '2.7.18' },
+    'java': { language: 'java', version: '15.0.2' },
     'php': { language: 'php', version: '8.2.3' },
     'c': { language: 'c', version: '10.2.0' },
     'cpp': { language: 'cpp', version: '10.2.0' },
-    'go': { language: 'go', version: '1.20.1' },
-    'ruby': { language: 'ruby', version: '3.0.0' },
-    'shell': { language: 'bash', version: '5.1.16' }, 
+    'go': { language: 'go', version: '1.16.2' },
+    'ruby': { language: 'ruby', version: '3.0.1' },
+    'shell': { language: 'bash', version: '5.2.0' }, 
     'javascript': { language: 'javascript', version: '18.15.0' },
-    'typescript': { language: 'typescript', version: '5.0.3' }
+    'typescript': { language: 'typescript', version: '1.32.3' }
 };
 
 

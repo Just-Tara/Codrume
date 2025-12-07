@@ -1,7 +1,7 @@
 
 import { 
   FileCode, Palette, Zap, FileType, Code2, Braces, FileText,
-  Database, Terminal, Coffee, Hash, FileJson, Settings, Box, Code, Binary
+  Database, Terminal, Coffee, Hash, Box, Code, Binary
 } from 'lucide-react';
 
 export const LANGUAGES = [
@@ -22,15 +22,6 @@ export const LANGUAGES = [
     extension: '.css',
     monacoLanguage: 'css',
     color: '#264de4',
-    category: 'Web'
-  },
-  {
-    id: 'scss',
-    name: 'SCSS',
-    icon: Palette,
-    extension: '.scss',
-    monacoLanguage: 'scss',
-    color: '#c6538c',
     category: 'Web'
   },
   {
@@ -118,66 +109,7 @@ export const LANGUAGES = [
     category: 'Systems'
   },
 
-  {
-    id: 'json',
-    name: 'JSON',
-    icon: Braces,
-    extension: '.json',
-    monacoLanguage: 'json',
-    color: '#292929',
-    category: 'Data'
-  },
-  {
-    id: 'xml',
-    name: 'XML',
-    icon: FileCode,
-    extension: '.xml',
-    monacoLanguage: 'xml',
-    color: '#0060ac',
-    category: 'Data'
-  },
-  {
-    id: 'yaml',
-    name: 'YAML',
-    icon: Box,
-    extension: '.yaml',
-    monacoLanguage: 'yaml',
-    color: '#cb171e',
-    category: 'Data'
-  },
-
-
-  {
-    id: 'sql',
-    name: 'SQL',
-    icon: Database,
-    extension: '.sql',
-    monacoLanguage: 'sql',
-    color: '#e38c00',
-    category: 'Database'
-  },
-
- 
-  {
-    id: 'shell',
-    name: 'Shell Script',
-    icon: Terminal,
-    extension: '.sh',
-    monacoLanguage: 'shell',
-    color: '#89e051',
-    category: 'Shell'
-  },
-
- 
-  {
-    id: 'markdown',
-    name: 'Markdown',
-    icon: FileText,
-    extension: '.md',
-    monacoLanguage: 'markdown',
-    color: '#083fa1',
-    category: 'Markup'
-  }
+  
 ];
 
 export const getDefaultContent = (languageId) => {
@@ -206,17 +138,6 @@ export const getDefaultContent = (languageId) => {
     
     cpp: '#include <iostream>\n\nint main() {\n  std::cout << "Hello World!" << std::endl;\n  return 0;\n}',
     
-    json: '{\n  "name": "My Project",\n  "version": "1.0.0",\n  "description": "New JSON file"\n}',
-    
-    xml: '<?xml version="1.0" encoding="UTF-8"?>\n<root>\n  <message>Hello World</message>\n</root>',
-    
-    yaml: '# YAML File\nname: My Project\nversion: 1.0.0\ndescription: New YAML file',
-    
-    sql: '-- SQL Query\nSELECT * FROM users\nWHERE active = true\nORDER BY created_at DESC;',
-    
-    shell: '#!/bin/bash\n# Shell Script\necho "Hello World!"',
-    
-    markdown: '# New Markdown File\n\n## Introduction\n\nStart writing your documentation here...\n\n### Features\n\n- Feature 1\n- Feature 2\n- Feature 3'
   };
   
   return templates[languageId] || '// New File\n';
