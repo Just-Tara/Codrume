@@ -10,6 +10,7 @@ import { getDefaultContent } from "./constants/Languages.jsx";
 import { excutePistonCode } from "./utils/PistonApi.jsx";
 import Console from "./components/Console.jsx";
 import FileExplorer from "./components/FIleExplorer.jsx";
+import { Terminal } from "lucide-react";
 
 function App() {
   const [isDark, setIsDark] = useState(true);
@@ -1226,6 +1227,25 @@ return (
       logs={consoleLogs}
       onClear={handleClearConsole}
     />
+
+    {!isConsoleOpen && (
+      <button 
+      onClick={() => setIsConsoleOpen(!isConsoleOpen)}
+      className={`fixed bottom-6 right-6 p-3 rounded-full shadow-lg z-50 transition-all ${
+        isDark
+          ? 'bg-gray-800 hover:bg-gray-700 text-white'
+          : 'bg-white hover:bg-gray-100 text-gray-800 border border-gray-300'
+      }`}
+      title="Toggle Console"
+    >
+      <Terminal size={20}/>
+      {consoleLogs.length > 0 && (
+        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+          {consoleLogs.length}
+        </span>
+      )}
+    </button>
+    )}
   </div>
 );
 }
