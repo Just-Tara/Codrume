@@ -40,7 +40,7 @@ function CodeEditor({ value, onChange, language, theme, fontSize, onEditorMount 
         fontFamily: 'Consolas, Monaco, monospace',
         minimap: { enabled: false },
         lineNumbers: 'on',
-        scrollBeyondLastLine: true,
+        scrollBeyondLastLine: false,
         automaticLayout: true,
         tabSize: 2,
         hideCursorInOverviewRuler: true,

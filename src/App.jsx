@@ -1243,6 +1243,7 @@ return (
       isAutoSaveEnabled={isAutoSaveEnabled}
       onToggleAutoSave={toggleAutoSave}
       onShareCode={handleShareCode}
+      fontSize={fontSize}
     />
 
     <AddNewFIle

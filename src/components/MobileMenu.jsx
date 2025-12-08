@@ -12,7 +12,8 @@ function MobileMenu({
       onToggleTheme,
       onSaveCode, 
       onFormatCode,
-      onShareCode
+      onShareCode,
+      fontSize
       }) {
   if (!isOpen) return null;
 
@@ -66,7 +67,7 @@ function MobileMenu({
           <div className="bg-gray-900 rounded p-3">
             <div className="text-xs text-gray-500 mb-1">Font Size</div>
             <div className="text-sm text-gray-200 flex items-center justify-between">
-              14px
+              {fontSize}px
               <div className="flex gap-2">
                 <button onClick={onDecreaseFontSize} className="bg-gray-700 px-2 py-1 rounded text-xs">−</button>
                 <button onClick={onIncreaseFontSize} className="bg-gray-700 px-2 py-1 rounded text-xs">+</button>
@@ -106,11 +107,6 @@ function MobileMenu({
            <Database size={16}/> Format
           </button>
 
-          <div className="border-t border-gray-700 my-4"></div>
-
-          <button className="w-full text-left text-sm text-gray-500 hover:text-gray-400 py-2 flex items-center gap-2">
-           <Info size={16}/>  About
-          </button>
         </div>
       </div>
     </>
