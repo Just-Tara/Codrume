@@ -19,13 +19,7 @@ export default function Header ({
         <header className={` dark:bg-gray-900 border-b border-gray-700 px-4 py-3 flex items-center justify-between 
         flex-wrap gap-3`}> 
             <div className="flex items-center gap-4 flex-wrap"> 
-                <h1 className="text-blue-500 font-bold text-lg flex items-center gap-2"> <Code size={20} /> CodeEditor</h1> 
-                <select className="hidden bg-gray-700 text-gray-300 px-3 py-1.5 rounded text-sm border border-gray-600 focus:outline-none focus:border-blue-500"> 
-                    <option>HTML5</option> 
-                    <option>React</option> 
-                    <option>Vue</option> 
-                    <option>Svelte</option>
-                </select> 
+                <h1 className="text-blue-500 font-bold text-lg flex items-center gap-2"> <img src="src\assets\logo.png" alt="logo-image" className='w-[23px]' /> CodeEditor</h1> 
                 <button className={`cursor-pointer px-4 py-1.5 rounded flex items-center gap-2 text-sm font-medium transition ${
                     isRunning
                         ? 'bg-gray-600 cursor-not-allowed'
