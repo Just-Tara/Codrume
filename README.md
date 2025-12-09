@@ -110,8 +110,8 @@ We welcome contributions to CodeEditor! If you have suggestions for improvements
 
 ## Author Info
 
-*   **Your Name:** [Olasoji Oluwanifemi Loveth]
-*   **Twitter:** [J_tara_]
+*   **Your Name:** [Tara]
+*   **Twitter:** [https://x.com/J_Tara_]
 
 ---
 
