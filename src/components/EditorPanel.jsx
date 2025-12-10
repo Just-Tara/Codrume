@@ -59,6 +59,7 @@ function EditorPanel({
           theme={isDark ? "dark" : "light"}
           fontSize={fontSize}
           onEditorMount={onEditorReady}
+          isDark={isDark}
         />
       </div>
       <StatusBar isAutoSaveEnabled={isAutoSaveEnabled} />

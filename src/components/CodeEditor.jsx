@@ -1,7 +1,8 @@
 import React, {useRef} from 'react';
 import Editor from '@monaco-editor/react';
+import LoadingSpinner from './LoadingSpinner';
 
-function CodeEditor({ value, onChange, language, theme, fontSize, onEditorMount }) {
+function CodeEditor({ value, onChange, language, theme, fontSize, onEditorMount, isDark }) {
   
   const editorRef = useRef(null);
   
@@ -28,13 +29,7 @@ function CodeEditor({ value, onChange, language, theme, fontSize, onEditorMount 
       onChange={handleEditorChange}
       onMount={handleEditorDidMount}
       theme={theme === 'dark' ? 'vs-dark' : 'vs-light'}
-      loading={
-        <div className="flex items-center justify-center h-full bg-gray-900 text-gray-400">
-          <div className="text-center">
-           <div>Loading...</div>
-          </div>
-        </div>
-      }
+      loading={<LoadingSpinner isDark={isDark} />}
       options={{
         fontSize: fontSize,
         fontFamily: 'Consolas, Monaco, monospace',
