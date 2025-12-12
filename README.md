@@ -1,7 +1,7 @@
-# CodeEditor: Real-time Multi-language Web IDE 🚀
+# Codrume: Your personal space to build
 
 ## Overview
-CodeEditor is a modern, web-based integrated development environment (IDE) built with React and Vite. It offers a versatile platform for real-time code editing across multiple programming languages, featuring live web previews for frontend development and integrated execution for backend languages via the Piston API.
+Codrume is a modern, web-based integrated development environment (IDE) built with React and Vite. It offers a versatile platform for real-time code editing across multiple programming languages, featuring live web previews for frontend development and integrated execution for backend languages via the Piston API.
 
 ## Features
 *   **Multi-language Support**: Seamlessly write and execute code in various languages including HTML, CSS, JavaScript, TypeScript, Python, Java, PHP, Ruby, Go, C, and C++.
@@ -49,7 +49,7 @@ Once the application is running, you can start coding and experimenting with dif
 
 ## Technologies Used
 
-CodeEditor leverages a modern web development stack to provide a rich and responsive user experience.
+Codrume leverages a modern web development stack to provide a rich and responsive user experience.
 
 | Category      | Technology                                                                                        | Description                                                                 |
 | :------------ | :------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------- |
@@ -64,7 +64,7 @@ CodeEditor leverages a modern web development stack to provide a rich and respon
 
 ## Contributing
 
-We welcome contributions to CodeEditor! If you have suggestions for improvements, new features, or bug fixes, please follow these guidelines:
+We welcome contributions to Codrume! If you have suggestions for improvements, new features, or bug fixes, please follow these guidelines:
 
 1.  ✨ **Fork the repository**.
 2.  🌱 **Create a new branch** for your feature or bug fix: `git checkout -b feature/your-feature-name` or `git checkout -b bugfix/issue-description`.
@@ -75,13 +75,7 @@ We welcome contributions to CodeEditor! If you have suggestions for improvements
 7.  ⬆️ **Push your branch** to your forked repository: `git push origin feature/your-feature-name`.
 8.  📬 **Open a pull request** to the `main` branch of this repository, describing your changes in detail.
 
-## Author Info
-
-*   **Your Name:** [Tara]
-*   **Twitter:** [[J_Tara_](https://x.com/J_Tara_)]
-
 ---
-
 [![React](https://img.shields.io/badge/React-18.x-blue?style=for-the-badge&logo=react)](https://react.dev/)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4-blue?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
 [![Vite](https://img.shields.io/badge/Vite-latest-purple?style=for-the-badge&logo=vite)](https://vitejs.dev/)
