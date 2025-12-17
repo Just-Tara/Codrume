@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getAllFiles, getActiveFile } from "../utils/fileHelpers"; 
 import { getDefaultContent } from "../constants/Languages";
+import { getProjectFromCloud } from "../config/superbaseClient";
 
 export const useProjectManager = () => {
   const [projects, setProjects] = useState([
@@ -38,6 +39,26 @@ export const useProjectManager = () => {
   const [targetProjectId, setTargetProjectId] = useState(null);
   const [targetFolderId, setTargetFolderId] = useState(null);
   const [isAddNewFileOpen, setIsAddNewFileOpen] = useState(false);
+
+useEffect(() => {
+  const loadShareProject = async () => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    if (id) {
+      console.log("found share is", id);
+    const sharedData = await getProjectFromCloud(id);
+    if (sharedData) {
+      setProjects(sharedData);
+      window.history.replaceState({}, document.title,window.location.pathname)
+    }
+    }
+  };
+  loadShareProject();
+}, [])
+
+
+
+
 
  useEffect(() => {
       try {

@@ -12,8 +12,7 @@ import { Terminal } from "lucide-react";
 import { getAllFiles} from "./utils/fileHelpers.jsx";
 import { useProjectManager } from "./hooks/useProjectManager.jsx";
 import { useCodeRunner } from "./hooks/useCodeRunner.jsx";
-
-
+import { saveProjectToCloud } from "./config/superbaseClient.js";
 
 function App() {
    const {
@@ -50,7 +49,24 @@ function App() {
       setActiveMobileView("preview");
     }
   }
-   
+
+
+  // useEffect for Auto-run (Tablet & Desktop only)
+  useEffect(() => {
+    if (!isAutoSaveEnabled) return;
+
+    if (window.innerWidth < 768) return;
+
+    const timer = setTimeout(() => {
+        console.log("Auto-running...");
+        handleRunCode(); 
+    }, 1000);
+
+    return () => clearTimeout(timer);
+
+  }, [activeTab, activeProjectId, projects, isAutoSaveEnabled]);
+
+
   // useEffect to HANDLE MOBILE VIEW DETECTION
   useEffect(() => {
     const checkMobile = () => {
@@ -141,17 +157,17 @@ function App() {
   };
   
   const handleShareCode = async () => {
-    try {
-      const jsonString = JSON.stringify(projects);
-      const base64Encoded = btoa(jsonString);
-      const shareableURL = `${window.location.origin}${window.location.pathname}?code=${base64Encoded}`;
-      await navigator.clipboard.writeText(shareableURL);
-      console.log("Shareable URL copied to clipboard:", shareableURL);
+    alert("Generating share link...");
+    try{
+      const id = await saveProjectToCloud(projects);
+      const shareUrl = `${window.location.origin}?id=${id}`;
+      await navigator.clipboard.writeText(shareUrl)
       setShareCode(true);
-    } catch (error) {
-      console.log("Failed to generate shareable URL:", error);
-      alert("Error generating shareable link. Please try again.");
-    }
+    } catch (error){
+        console.error("Failed to share", error);
+        alert("Something went wrong creating the link.");
+    };
+
   };
 
   const handleEditorReady = (editor) => {
