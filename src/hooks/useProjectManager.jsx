@@ -44,17 +44,27 @@ useEffect(() => {
   const loadShareProject = async () => {
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
+    
     if (id) {
-      console.log("found share is", id);
-    const sharedData = await getProjectFromCloud(id);
-    if (sharedData) {
-      setProjects(sharedData);
-      window.history.replaceState({}, document.title,window.location.pathname)
-    }
+      console.log("Found share ID:", id);
+      const sharedData = await getProjectFromCloud(id);
+      
+      if (sharedData && sharedData.length > 0) 
+        setProjects(sharedData);
+        const loadedProject = sharedData[0];
+        setActiveProjectId(loadedProject.id);
+      
+        if (loadedProject.files && loadedProject.files.length > 0) {
+          setActiveTab(loadedProject.files[0].id);
+          setOpenTabs([loadedProject.files[0].id]);
+        }
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
     }
   };
   loadShareProject();
-}, [])
+}, []);
+  
 
 
 
