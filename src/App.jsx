@@ -165,7 +165,8 @@ const handleShareCode = async () => {
       return;
     }
 
-    const id = await saveProjectToCloud([projectToShare]);
+    const id = await saveProjectToCloud([projectToShare]); 
+     
     
     const shareUrl = `${window.location.origin}?id=${id}`;
     await navigator.clipboard.writeText(shareUrl);
