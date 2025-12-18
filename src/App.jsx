@@ -158,7 +158,12 @@ function App() {
   
   const handleShareCode = async () => {
     try{
-      const id = await saveProjectToCloud(projects);
+       const projectToShare = projects.find(p => p.id === activeProjectId);
+       if (!projectToShare) {
+            alert("No active project to share!");
+            return;
+       };
+      const id = await saveProjectToCloud([projects]);
       const shareUrl = `${window.location.origin}?id=${id}`;
       await navigator.clipboard.writeText(shareUrl)
       setShareCode(true);
